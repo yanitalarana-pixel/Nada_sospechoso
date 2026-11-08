@@ -9,8 +9,9 @@
             margin: 0;
             overflow: hidden;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #1a1a1a;
+            background-color: #87CEEB;
             color: #fff;
+            user-select: none;
         }
         #canvas-container {
             width: 100vw;
@@ -23,7 +24,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            pointer-events: none; /* Allows clicking through to 3D canvas if needed */
+            pointer-events: none;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -31,72 +32,86 @@
             box-sizing: border-box;
         }
         .stats-container {
-            background: rgba(0, 0, 0, 0.7);
-            padding: 15px 25px;
-            border-radius: 12px;
-            border: 1px solid #444;
-            max-width: 300px;
+            background: rgba(15, 23, 42, 0.85);
+            padding: 16px 22px;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 280px;
             pointer-events: auto;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
         }
-        .stat-bar {
-            margin: 10px 0;
-        }
+        .stat-bar { margin: 8px 0; font-size: 13px; font-weight: bold; }
         .bar-bg {
-            background: #333;
-            border-radius: 5px;
-            height: 12px;
+            background: #334155;
+            border-radius: 6px;
+            height: 10px;
             width: 100%;
             overflow: hidden;
+            margin-top: 4px;
         }
-        .bar-fill {
-            height: 100%;
-            transition: width 0.3s ease;
-        }
-        #hambre-fill { background: #e74c3c; }
-        #energia-fill { background: #f1c40f; }
-        #estimulo-fill { background: #3498db; }
+        .bar-fill { height: 100%; transition: width 0.3s ease; }
+        #hambre-fill { background: #ef4444; }
+        #energia-fill { background: #eab308; }
+        #estimulo-fill { background: #38bdf8; }
         
         .controls {
             display: flex;
-            gap: 15px;
+            gap: 12px;
             justify-content: center;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             pointer-events: auto;
+            flex-wrap: wrap;
         }
         button {
-            background: #2c3e50;
-            color: white;
-            border: 2px solid #34495e;
-            padding: 12px 24px;
-            border-radius: 8px;
+            background: #1e293b;
+            color: #f8fafc;
+            border: 2px solid #38bdf8;
+            padding: 12px 20px;
+            border-radius: 10px;
             cursor: pointer;
             font-weight: bold;
+            font-size: 14px;
             transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
-        button:hover { background: #34495e; transform: translateY(-2px); }
+        button:hover { background: #38bdf8; color: #0f172a; transform: translateY(-2px); }
         button:active { transform: translateY(0); }
+
+        .hint {
+            position: absolute;
+            bottom: 85px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.6);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: #cbd5e1;
+            pointer-events: none;
+        }
 
         .info-panel {
             position: absolute;
             right: 20px;
             top: 20px;
-            background: rgba(0, 0, 0, 0.85);
-            padding: 20px;
-            border-radius: 12px;
-            border: 1px solid #2980b9;
-            max-width: 350px;
+            background: rgba(15, 23, 42, 0.95);
+            padding: 22px;
+            border-radius: 14px;
+            border: 1px solid #38bdf8;
+            max-width: 320px;
             pointer-events: auto;
+            font-size: 13px;
             line-height: 1.5;
             display: none;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
         }
-        .info-panel h2 { margin-top: 0; color: #3498db; }
-        .info-panel ul { padding-left: 20px; }
+        .info-panel h2 { margin-top: 0; color: #38bdf8; font-size: 18px; }
+        .info-panel ul { padding-left: 18px; margin: 10px 0; }
         
         #btn-info {
             position: absolute;
             right: 20px;
-            bottom: 20px;
-            background: #2980b9;
+            bottom: 25px;
             pointer-events: auto;
         }
     </style>
@@ -104,133 +119,173 @@
 <body>
 
     <div id="canvas-container"></div>
+    <div class="hint">🖱️ Arrastra con el ratón o dedo para girar 360°</div>
 
     <div class="ui-layer">
         <div class="stats-container">
-            <h3 style="margin:0 0 10px 0;">Microraptor zhaoianus</h3>
+            <h3 style="margin:0 0 10px 0; color:#38bdf8; font-size:16px;">Microraptor zhaoianus</h3>
             <div class="stat-bar">
-                <span>Saciedad (Hambre)</span>
+                <span>🍖 Saciedad</span>
                 <div class="bar-bg"><div id="hambre-fill" class="bar-fill" style="width: 100%;"></div></div>
             </div>
             <div class="stat-bar">
-                <span>Energía (Descanso)</span>
+                <span>⚡ Energía</span>
                 <div class="bar-bg"><div id="energia-fill" class="bar-fill" style="width: 100%;"></div></div>
             </div>
             <div class="stat-bar">
-                <span>Vuelo (Felicidad)</span>
+                <span>🪶 Felicidad (Planeo)</span>
                 <div class="bar-bg"><div id="estimulo-fill" class="bar-fill" style="width: 100%;"></div></div>
             </div>
         </div>
 
         <div class="controls">
-            <button onclick="alimentar()">Dar Lagartija (Comer)</button>
-            <button onclick="dormir()">Dormir</button>
-            <button onclick="planear()">Planear entre Árboles</button>
+            <button onclick="alimentar()">🦎 Dar Lagartija</button>
+            <button onclick="dormir()">💤 Dormir</button>
+            <button onclick="planear()">🌲 Planear</button>
         </div>
     </div>
 
-    <button id="btn-info" onclick="toggleInfo()">📘 Anatomía Científica</button>
+    <button id="btn-info" onclick="toggleInfo()">📘 Anatomía</button>
 
     <div class="info-panel" id="info-panel">
         <h2>Microraptor zhaoianus</h2>
-        <p>Un dinosaurio terópodo dromeosáurido del Cretácico Inferior (Formación Jiufotang, China).</p>
+        <p>Pequeño dromeosáurido del Cretácico Inferior descubierto en la Formación Jiufotang, China.</p>
         <ul>
-            <li><strong>Cuatro Alas:</strong> Poseía plumas asimétricas de vuelo tanto en sus brazos como en sus piernas, lo que le permitía planear eficientemente de árbol en árbol.</li>
-            <li><strong>Plumaje:</strong> El estudio de melanosomas fosilizados en 2012 demostró que su plumaje era negro con una fuerte iridiscencia estructural (un brillo azul/violeta), similar al de los cuervos actuales.</li>
-            <li><strong>Dieta:</strong> Era un cazador arbóreo y terrestre. En sus estómagos fosilizados se han encontrado restos de peces, pequeños mamíferos y lagartijas.</li>
-            <li><strong>Tamaño:</strong> Media aproximadamente 1 metro de largo, siendo uno de los dinosaurios no avianos más pequeños.</li>
+            <li><strong>Cuatro Alas:</strong> Poseía plumas asimétricas de vuelo tanto en los brazos anteriores como en las patas traseras.</li>
+            <li><strong>Plumaje Iridiscente:</strong> En 2012, el análisis de sus melanosomas fosilizados demostró un brillo estructural negro azulado, similar al de un cuervo.</li>
+            <li><strong>Dieta Arbórea:</strong> Depredador ágil; cazaba insectos, pequeñas lagartijas, peces y mamíferos primitivos.</li>
+            <li><strong>Cola Rígida:</strong> Larga y emplumada al final para servir como timón aerodinámico en caída y planeo.</li>
         </ul>
-        <button onclick="toggleInfo()" style="width: 100%; margin-top:10px;">Cerrar</button>
+        <button onclick="toggleInfo()" style="width: 100%; margin-top:10px;">Entendido</button>
     </div>
 
-    <!-- Import Three.js as an ES module -->
+    <!-- Cargar Three.js y OrbitControls -->
     <script type="module">
         import * as THREE from 'https://unpkg.com/three@0.158.0/build/three.module.js';
+        import { OrbitControls } from 'https://unpkg.com/three@0.158.0/examples/jsm/controls/OrbitControls.js';
 
-        // --- 1. CONFIGURACIÓN 3D (Three.js) ---
+        // --- 1. ESCENA Y CÁMARA ---
         const container = document.getElementById('canvas-container');
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x87CEEB); // Cielo azul claro
-        scene.fog = new THREE.Fog(0x87CEEB, 10, 50);
+        scene.background = new THREE.Color(0x93c5fd);
 
         const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
-        camera.position.set(0, 2, 8);
+        camera.position.set(0, 2, 5);
 
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMap.enabled = true;
+        renderer.setPixelRatio(window.devicePixelRatio);
         container.appendChild(renderer.domElement);
 
-        // Iluminación (Crucial para notar la iridiscencia)
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.target.set(0, 0.5, 0);
+
+        // Luces
+        const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
         scene.add(ambientLight);
         
-        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-        dirLight.position.set(5, 10, 5);
-        dirLight.castShadow = true;
-        scene.add(dirLight);
+        const sunLight = new THREE.DirectionalLight(0xfffbeb, 1.8);
+        sunLight.position.set(5, 10, 5);
+        sunLight.castShadow = true;
+        scene.add(sunLight);
 
-        // Suelo (Rama/Tronco simulado)
-        const groundGeo = new THREE.CylinderGeometry(2, 2, 10, 32);
-        const groundMat = new THREE.MeshLambertMaterial({ color: 0x4a3b2c }); // Color corteza
-        const ground = new THREE.Mesh(groundGeo, groundMat);
-        ground.rotation.z = Math.PI / 2;
-        ground.position.y = -1.5;
-        ground.receiveShadow = true;
-        scene.add(ground);
+        // --- 2. ENTORNO (Rama/Tronco corregida) ---
+        const trunkGeo = new THREE.CylinderGeometry(0.5, 0.5, 12, 16);
+        const trunkMat = new THREE.MeshStandardMaterial({ color: 0x4a2e18, roughness: 0.9 });
+        const trunk = new THREE.Mesh(trunkGeo, trunkMat);
+        trunk.rotation.z = Math.PI / 2;
+        trunk.position.set(0, -0.5, 0); // Bajado para que el dino se pose encima
+        trunk.receiveShadow = true;
+        scene.add(trunk);
 
-        // --- 2. CONSTRUCCIÓN DEL MICRORAPTOR ---
-        // Material negro iridiscente (Shininess alta y specular azulado)
-        const featherMaterial = new THREE.MeshPhongMaterial({ 
-            color: 0x111111, 
-            specular: 0x4444ff, // Brillo azul iridiscente
-            shininess: 80 
+        // --- 3. MODELO ANATÓMICO MICRORAPTOR ---
+        // Material negro con fuerte reflejo azul violáceo (Iridiscencia)
+        const featherMat = new THREE.MeshStandardMaterial({ 
+            color: 0x111827, 
+            roughness: 0.25, 
+            metalness: 0.65 
         });
+        const beakMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.5 });
+        const eyeMat = new THREE.MeshBasicMaterial({ color: 0xfacc15 });
 
         const microraptor = new THREE.Group();
+        microraptor.position.set(0, 0.4, 0); // Posicionado con orgullo sobre la rama
 
-        // Cuerpo
-        const bodyGeo = new THREE.CapsuleGeometry(0.4, 1, 4, 8);
-        const body = new THREE.Mesh(bodyGeo, featherMaterial);
-        body.rotation.z = Math.PI / 2;
+        // Torso
+        const bodyGeo = new THREE.CapsuleGeometry(0.3, 0.7, 8, 16);
+        const body = new THREE.Mesh(bodyGeo, featherMat);
+        body.rotation.z = Math.PI / 2.3;
         body.castShadow = true;
         microraptor.add(body);
 
-        // Cabeza y Cuello
-        const headGeo = new THREE.ConeGeometry(0.3, 0.8, 8);
-        const head = new THREE.Mesh(headGeo, featherMaterial);
-        head.position.set(0.8, 0.4, 0);
-        head.rotation.z = -Math.PI / 4;
-        microraptor.add(head);
+        // Cuello y Cabeza
+        const neckGeo = new THREE.CylinderGeometry(0.12, 0.18, 0.5, 12);
+        const neck = new THREE.Mesh(neckGeo, featherMat);
+        neck.position.set(0.5, 0.35, 0);
+        neck.rotation.z = -Math.PI / 4;
+        microraptor.add(neck);
 
-        // Alas delanteras (Brazos)
-        const wingGeo = new THREE.BoxGeometry(0.8, 0.1, 1.5);
-        const leftWing = new THREE.Mesh(wingGeo, featherMaterial);
-        leftWing.position.set(0, 0, 0.9);
-        const rightWing = new THREE.Mesh(wingGeo, featherMaterial);
-        rightWing.position.set(0, 0, -0.9);
+        const headGroup = new THREE.Group();
+        headGroup.position.set(0.7, 0.55, 0);
+
+        const headGeo = new THREE.SphereGeometry(0.2, 16, 16);
+        const head = new THREE.Mesh(headGeo, featherMat);
+        headGroup.add(head);
+
+        const snoutGeo = new THREE.ConeGeometry(0.12, 0.45, 12);
+        const snout = new THREE.Mesh(snoutGeo, beakMat);
+        snout.rotation.z = -Math.PI / 2;
+        snout.position.set(0.3, 0, 0);
+        headGroup.add(snout);
+
+        // Ojos
+        const eyeGeo = new THREE.SphereGeometry(0.04, 8, 8);
+        const eyeL = new THREE.Mesh(eyeGeo, eyeMat);
+        eyeL.position.set(0.1, 0.05, 0.16);
+        const eyeR = new THREE.Mesh(eyeGeo, eyeMat);
+        eyeR.position.set(0.1, 0.05, -0.16);
+        headGroup.add(eyeL);
+        headGroup.add(eyeR);
+
+        microraptor.add(headGroup);
+
+        // Alas anteriores (Brazos)
+        const wingShape = new THREE.BoxGeometry(0.7, 0.04, 1.2);
+        const leftWing = new THREE.Mesh(wingShape, featherMat);
+        leftWing.position.set(0.1, 0.15, 0.75);
+        leftWing.rotation.x = 0.1;
+        const rightWing = new THREE.Mesh(wingShape, featherMat);
+        rightWing.position.set(0.1, 0.15, -0.75);
+        rightWing.rotation.x = -0.1;
         microraptor.add(leftWing);
         microraptor.add(rightWing);
 
-        // Alas traseras (Piernas emplumadas - Característica clave)
-        const legWingGeo = new THREE.BoxGeometry(0.6, 0.1, 1.2);
-        const leftLegWing = new THREE.Mesh(legWingGeo, featherMaterial);
-        leftLegWing.position.set(-0.6, -0.2, 0.7);
-        const rightLegWing = new THREE.Mesh(legWingGeo, featherMaterial);
-        rightLegWing.position.set(-0.6, -0.2, -0.7);
-        microraptor.add(leftLegWing);
-        microraptor.add(rightLegWing);
+        // Alas traseras (Piernas plumosas - Clave científica de Microraptor)
+        const rearWingShape = new THREE.BoxGeometry(0.5, 0.04, 0.9);
+        const leftRearWing = new THREE.Mesh(rearWingShape, featherMat);
+        leftRearWing.position.set(-0.4, -0.1, 0.55);
+        const rightRearWing = new THREE.Mesh(rearWingShape, featherMat);
+        rightRearWing.position.set(-0.4, -0.1, -0.55);
+        microraptor.add(leftRearWing);
+        microraptor.add(rightRearWing);
 
-        // Cola larga (Esencial para estabilizar el vuelo)
-        const tailGeo = new THREE.CylinderGeometry(0.1, 0.02, 2, 8);
-        const tail = new THREE.Mesh(tailGeo, featherMaterial);
-        tail.position.set(-1.2, 0, 0);
-        tail.rotation.z = Math.PI / 2;
+        // Cola larga rígida y abanico distal
+        const tailGeo = new THREE.CylinderGeometry(0.04, 0.08, 1.8, 12);
+        const tail = new THREE.Mesh(tailGeo, featherMat);
+        tail.position.set(-1.1, -0.05, 0);
+        tail.rotation.z = Math.PI / 2.1;
         microraptor.add(tail);
+
+        const tailFanGeo = new THREE.BoxGeometry(0.4, 0.02, 0.5);
+        const tailFan = new THREE.Mesh(tailFanGeo, featherMat);
+        tailFan.position.set(-1.9, 0.05, 0);
+        microraptor.add(tailFan);
 
         scene.add(microraptor);
 
-        // --- 3. ANIMACIÓN Y LÓGICA DEL JUEGO ---
+        // --- 4. ANIMACIÓN Y COMPORTAMIENTO ---
         let time = 0;
         let isSleeping = false;
         let isGliding = false;
@@ -238,22 +293,26 @@
         function animate() {
             requestAnimationFrame(animate);
             time += 0.05;
+            controls.update();
 
             if (isGliding) {
-                // Animación de planeo
-                microraptor.position.y = Math.sin(time) * 0.5 + 1;
-                leftWing.rotation.x = Math.PI / 8;
-                rightWing.rotation.x = -Math.PI / 8;
+                microraptor.position.y = 1.6 + Math.sin(time * 2) * 0.4;
+                microraptor.position.x = Math.sin(time) * 0.5;
+                leftWing.rotation.z = Math.sin(time * 3) * 0.15;
+                rightWing.rotation.z = -Math.sin(time * 3) * 0.15;
             } else if (isSleeping) {
-                // Animación de respiración lenta
-                microraptor.position.y = Math.sin(time * 0.5) * 0.05;
-                head.rotation.z = -Math.PI / 2; // Cabeza agachada
+                microraptor.position.y = 0.35 + Math.sin(time * 0.5) * 0.02;
+                headGroup.rotation.z = -0.4;
+                leftWing.rotation.x = 0.4;
+                rightWing.rotation.x = -0.4;
             } else {
-                // Animación de reposo (Idle)
-                microraptor.position.y = Math.sin(time) * 0.1;
-                head.rotation.z = -Math.PI / 4 + Math.sin(time * 2) * 0.05;
-                leftWing.rotation.x = 0;
-                rightWing.rotation.x = 0;
+                // Respiración y movimiento curioso de cabeza
+                microraptor.position.y = 0.4 + Math.sin(time) * 0.04;
+                headGroup.rotation.y = Math.sin(time * 0.7) * 0.2;
+                headGroup.rotation.z = Math.sin(time * 1.2) * 0.08;
+                tail.rotation.y = Math.sin(time * 0.8) * 0.1;
+                leftWing.rotation.x = 0.1;
+                rightWing.rotation.x = -0.1;
             }
 
             renderer.render(scene, camera);
@@ -267,8 +326,8 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
 
-        // --- 4. SISTEMA TAMAGOTCHI ---
-        let stats = { hambre: 50, energia: 100, estimulo: 80 };
+        // --- 5. LÓGICA TAMAGOTCHI ---
+        let stats = { hambre: 60, energia: 100, estimulo: 75 };
 
         function updateUI() {
             document.getElementById('hambre-fill').style.width = stats.hambre + '%';
@@ -276,46 +335,41 @@
             document.getElementById('estimulo-fill').style.width = stats.estimulo + '%';
         }
 
-        // Bucle de degradación de stats
         setInterval(() => {
             if (!isSleeping) stats.energia = Math.max(0, stats.energia - 1);
-            else stats.energia = Math.min(100, stats.energia + 3);
+            else stats.energia = Math.min(100, stats.energia + 4);
 
-            stats.hambre = Math.max(0, stats.hambre - 2);
+            stats.hambre = Math.max(0, stats.hambre - 1);
             stats.estimulo = Math.max(0, stats.estimulo - 1);
             updateUI();
         }, 2000);
 
-        // Exponer funciones globales para los botones HTML
         window.alimentar = () => {
             if (isSleeping) return;
-            stats.hambre = Math.min(100, stats.hambre + 30);
-            
-            // Pequeña animación de salto al comer
-            const jumpInt = setInterval(() => {
-                microraptor.position.y += 0.1;
-                setTimeout(() => microraptor.position.y -= 0.1, 100);
-            }, 200);
-            setTimeout(() => clearInterval(jumpInt), 600);
+            stats.hambre = Math.min(100, stats.hambre + 35);
             updateUI();
+            
+            // Reacción rápida
+            headGroup.position.y += 0.1;
+            setTimeout(() => headGroup.position.y -= 0.1, 200);
         };
 
         window.dormir = () => {
             isSleeping = !isSleeping;
             isGliding = false;
-            if (isSleeping) scene.background = new THREE.Color(0x1a1a2e); // Noche
-            else scene.background = new THREE.Color(0x87CEEB); // Día
+            scene.background = new THREE.Color(isSleeping ? 0x0f172a : 0x93c5fd);
         };
 
         window.planear = () => {
-            if (isSleeping || stats.energia < 20) return;
+            if (isSleeping || stats.energia < 15) return;
             isGliding = true;
-            stats.estimulo = Math.min(100, stats.estimulo + 40);
-            stats.energia -= 20;
+            stats.estimulo = Math.min(100, stats.estimulo + 35);
+            stats.energia = Math.max(0, stats.energia - 15);
             updateUI();
-            
-            // Dejar de planear después de 3 segundos
-            setTimeout(() => { isGliding = false; }, 3000);
+            setTimeout(() => { 
+                isGliding = false; 
+                microraptor.position.x = 0;
+            }, 3500);
         };
 
         window.toggleInfo = () => {
